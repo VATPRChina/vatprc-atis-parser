@@ -60,6 +60,11 @@ if ($decoded->getWindshearAllRunways()) {
     print(' ');
 }
 
+//A-CDM
+if ((time() - strtotime("2024-09-04 16:00:00Z") > 0) and in_array($decoded->getIcao(), ['ZBAA', 'ZSPD', 'ZGGG'])) {
+    print(' A-CDM IN OPERATION ');
+}
+
 //NOTAM (reserve)
 
 // Wind
