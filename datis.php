@@ -86,9 +86,9 @@ if ($decoded->getWindshearAllRunways()) {
 
 // A-CDM message
 if (in_array($decoded->getIcao(), ['ZBAA', 'ZSPD', 'ZGGG'])) {
-    $acdmMessage = 'A-CDM IN OPERATION ';
+    $acdmMessage = ' A-CDM IN OPERATION ';
 } elseif ($acdm === '1') {
-    $acdmMessage = 'A-CDM IN OPERATION ';
+    $acdmMessage = ' A-CDM IN OPERATION ';
 } else {
     $acdmMessage = '';
 }
