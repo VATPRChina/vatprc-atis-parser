@@ -18,8 +18,11 @@ $rvr = $decoded->getRunwaysVisualRange(); //RunwayVisualRange array
 $phenomenon = $decoded->getPresentWeather(); //WeatherPhenomenon array
 $clouds = $decoded->getClouds(); //CloudLayer array
 $windShearAlerts = $decoded->getWindshearRunways();
-$type = $_GET['type'] ?? null;
-$adelv = $_GET['adelv'] ?? null; // Value for QFE calculation, type aerodrome elevation in feet.
+$zspdqnh = $decoder->parse(file_get_contents('http://metar.vatsim.net/ZSPD'));
+$type = $_GET['atistype'] ?? null;
+$adelv = $_GET['adelv'] ?? null; // Value for QFE calculation, type aerodrome elevation in meters.
+$notam = $_GET['NOTAM'] ?? null;
+$acdm = $_GET['acdm'] ?? null;
 
 if ($decoded->isValid() == false) {
     exit('Invalid METAR.');
@@ -38,34 +41,77 @@ print($_GET['info'] . ' '. substr($rawMetar, 7, 4) . 'Z ');
 
 // Operational Runway
 if ($type === 'D') {
-    print ('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']));
+    print('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']));
 } elseif ($type === 'A') {
-    print ('EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
+    print('EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
 } else {
-    print ('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
+    print('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
 }
 
+// Initialize ctnoutput
+$ctnoutput = '';
 
-// Wind Shear Alert
+// Runway Condition Code warning
+$runwayConditionWarning = '';
+if (isset($phenomenon[0]) && !empty($phenomenon[0])) {
+    $types = $phenomenon[0]->getTypes();
+    $isPrecipitation = in_array("DZ", $types) || in_array("TS", $types) || in_array("RA", $types) || in_array("SN", $types) || in_array("SG", $types);
+    
+    if ($isPrecipitation) {
+        $runwayConditionWarning .= 'RWY ';
+        if ($type === 'D') {
+            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['dep']);
+        } elseif ($type === 'A') {
+            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['arr']);
+        } else {
+            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['arr']);
+        }
+        $runwayConditionWarning .= ' SURFACE CONDITION CODE 5, 5, 5, ISSUED AT ' . substr($rawMetar, 7, 4) . ' ALL PARTS WET, DEPTH NOT REPORTED, COVERAGE 100PCT';
+    }
+}
+
+// Wind Shear Alert warning
+$windShearWarning = '';
 if ($decoded->getWindshearAllRunways()) {
-    print(' CTN WS ALL RWYS ');
+    $windShearWarning .= 'WS ALL RWYS ';
 } else if ($windShearAlerts) {
-    print(' CTN WS RWY ');
+    $windShearWarning .= 'WS RWY ';
     foreach ($windShearAlerts as $index => $runway) {
         if ($index >= 1) {
-            print('AND ');
+            $windShearWarning .= 'AND ';
         }
-        print($runway);
+        $windShearWarning .= $runway;
     }
-    print(' ');
 }
 
-//A-CDM
-if ((time() - strtotime("2024-09-04 16:00:00Z") > 0) and in_array($decoded->getIcao(), ['ZBAA', 'ZSPD', 'ZGGG'])) {
-    print(' A-CDM IN OPERATION ');
+// A-CDM message
+if (in_array($decoded->getIcao(), ['ZBAA', 'ZSPD', 'ZGGG'])) {
+    $acdmMessage = 'A-CDM IN OPERATION ';
+} elseif ($acdm === '1') {
+    $acdmMessage = 'A-CDM IN OPERATION ';
+} else {
+    $acdmMessage = '';
 }
 
-//NOTAM (reserve)
+// NOTAM message
+$notamMessage = '';
+if ($notam !== null) {
+    $notamMessage .= $notam;
+}
+
+// Check if any warning or message exists, add "CTN" if true
+if (!empty($runwayConditionWarning) || !empty($windShearWarning) || !empty($acdmMessage) || !empty($notamMessage)) {
+    $ctnoutput .= ' CTN ';
+}
+
+// Append warnings and messages to ctnoutput
+$ctnoutput .= $runwayConditionWarning;
+$ctnoutput .= $windShearWarning;
+$ctnoutput .= $acdmMessage;
+$ctnoutput .= $notamMessage;
+
+// ctnoutput combined warnings and messages
+print strtoupper($ctnoutput);
 
 // Wind
 print(' WIND ');
@@ -85,22 +131,18 @@ if ($surfaceWindObj->getMeanSpeed()->getValue() == 0) {
     $raw_sw = $surfaceWindObj->getMeanSpeed()->getValue();
     $int_sw = (int)$raw_sw;
     $str_sw = strval($int_sw);
-    if ($int_sw < 10) {
-        $out_sw = '0' . $str_sw ;
-    } else {
-        $out_sw = $str_sw ;
+    $out_sw = $str_sw ;
+
+    print($out_sw);
+
+    if ($surfaceWindObj->getSpeedVariations() != null) {
+        print('G' . $surfaceWindObj->getSpeedVariations()->getValue());
     }
 
-    print($out_sw . ' MPS ');
+    print(' MPS ');
 
 }
-If ($surfaceWindObj->getSpeedVariations() != null) {
-    if ($surfaceWindObj->getSpeedVariations()->getValue() < 10) {
-        print(' GUST 0' . $surfaceWindObj->getSpeedVariations()->getValue() . ' MPS ');
-    } else {
-            print(' GUST ' . $surfaceWindObj->getSpeedVariations()->getValue() . ' MPS ');
-    }
-}
+
 if ($surfaceWindObj->getDirectionVariations() != null) {
     if ($surfaceWindObj->getDirectionVariations()[0]->getValue() < 100) {
         print('0');
@@ -209,14 +251,109 @@ if ($int_dewpt_data < 10 && $int_dewpt_data > 0) {
         $out_dewpt_data = $str_dewpt_data ;
 }
 
-print(' TEMP ' . $out_temp_data . ' DEW POINT ' . $out_dewpt_data . ' QNH ' . $decoded->getPressure()->getValue() . ' HPA ');
+print(' T ' . $out_temp_data . ' /DP ' . $out_dewpt_data . ' QNH ' . $decoded->getPressure()->getValue() . ' HPA ');
 
-if ($adelv !== null) {
-    print('QFE ' . floor($decoded->getPressure()->getValue() - $adelv / 27) . ' HPA ');
+if (is_numeric($adelv)) {
+    /**
+     * Calculates QFE based on QNH and altitude.
+     *
+     * @param float $qfe   The initial estimate of QFE.
+     * @param float $qnh   The QNH value.
+     * @param float $adelv The altitude above sea level.
+     *
+     * @return float The calculated QFE.
+     */
+    function qfeFunction($qfe, $qnh, $adelv)
+    {
+        return $qnh - 1013.25 * pow((1 - 0.0065 * ((44330.77 - 11880.32 * pow($qfe, 0.190263) - $adelv) / 288.15)), 5.25588);
+    }
+    
+    /**
+     * Iteratively calculates QFE based on QNH and altitude.
+     *
+     * @param float $qnh   The QNH value.
+     * @param float $adelv The altitude above sea level.
+     *
+     * @return float The calculated QFE.
+     */
+    function calculateQFE($qnh, $adelv)
+    {
+        $tolerance = 0.01;
+        $maxIterations = 100;
+        $qfe = $qnh - 100;
+        $iteration = 0;
+    
+        while ($iteration < $maxIterations) {
+            $f = qfeFunction($qfe, $qnh, $adelv);
+            $f_prime = (qfeFunction($qfe + $tolerance, $qnh, $adelv) - $f) / $tolerance;
+    
+            if (abs($f_prime) < $tolerance) {
+                break;
+            }
+    
+            $qfe = $qfe - $f / $f_prime;
+            $iteration++;
+    
+            if (abs($f) < $tolerance) {
+                break;
+            }
+        }
+    
+        return round($qfe);
+    }
+    
+    $qnh = $decoded->getPressure()->getValue();
+    
+    $qfe = calculateQFE($qnh, $adelv);
+    print('QFE ' . $qfe . ' HPA ');
 }
 
+if ($decoded->getIcao() == 'ZSSS' || $decoded->getIcao() == 'ZSPD') {
+    print('QNH OF SHANGHAI TERMINAL CONTROL AREA ' . $zspdqnh->getPressure()->getValue() . ' ');
+}
+
+
+//Transition Altitude
+
+$TAData = [
+    'ZGGG' => ["TA" => 2700],
+    'ZGOW' => ["TA" => 2700],
+    'ZGSD' => ["TA" => 2700],
+    'ZGSZ' => ["TA" => 2700],
+    'ZHSN' => ["TAA" => 4800, "TAB" => 4200, "TA" => 4500],
+    'ZHXY' => ["TH" => 1800],
+    'ZLLL' => ["TAA" => 4500, "TAB" => 3900, "TA" => 4200],
+    'ZLXN' => ["TAA" => 5100, "TAB" => 4500, "TA" => 4800],
+    'ZPJH' => ["TAA" => 3900, "TAB" => 3300, "TA" => 3600],
+    'ZPLJ' => ["TAA" => 6300, "TAB" => 5700, "TA" => 6000],
+    'ZPMS' => ["TAA" => 4500, "TAB" => 3900, "TA" => 4200],
+    'ZPPP' => ["TAA" => 5700, "TAB" => 5100, "TA" => 5400],
+    'ZSCG' => ["TA" => 2100],
+    'ZSWH' => ["TA" => 1500],
+    'ZSWX' => ["TA" => 1800],
+    'ZSYN' => ["TA" => 'BY ATC'],
+    'ZSYT' => ["TAA" => 3000, "TAB" => 2400, "TA" => 2700],
+    'ZULS' => ["TAA" => 7800, "TAB" => 7200, "TA" => 7500],
+    'ZUXC' => ["TAA" => 5100, "TAB" => 4500, "TA" => 4800],
+    'ZWSH' => ["TH" => 3000],
+    'ZMUB' => ["TAA" => 4200, "TAB" => 3900, "TA" => 3900],
+    'ZMCK' => ["TAA" => 4200, "TAB" => 3900, "TA" => 3900],
+];
+
+print isset($TAData[$decoded->getIcao()]['TA']) ? 'TRANSITION ALTITUDE ' : (isset($TAData[$decoded->getIcao()]['TH']) ? 'TRANSITION HEIGHT ' : 'TRANSITION ALTITUDE ');
+
+if (isset($TAData[$decoded->getIcao()]['TAA']) && isset($TAData[$decoded->getIcao()]['TAB']) && isset($TAData[$decoded->getIcao()]['TA'])) {
+    $displayTime = ($decoded->getPressure()->getValue() >= 1031) ? $TAData[$decoded->getIcao()]['TAA'] : (($decoded->getPressure()->getValue() <= 979) ? $TAData[$decoded->getIcao()]['TAB'] : $TAData[$decoded->getIcao()]['TA']);
+} else {
+    $displayTime = $TAData[$decoded->getIcao()]['TA'] ?? $TAData[$decoded->getIcao()]['TH'] ?? null;
+}
+
+print $displayTime ?? (($decoded->getPressure()->getValue() >= 1031) ? 3300 : (($decoded->getPressure()->getValue() <= 979) ? 2700 : 3000));
+
+print(isset($TAData[$decoded->getIcao()]["TA"]) && $TAData[$decoded->getIcao()]["TA"] === 'BY ATC') || (isset($TAData[$decoded->getIcao()]["TH"]) && $TAData[$decoded->getIcao()]["TH"] === 'BY ATC') ? ' ' : ' ';
+
 //Transition Level
-print('TRANSITION LEVEL ');
+print('/LEVEL ');
 
 $TLData = [
     'ZGGG' => ["pressure" => 980, "TL" => 3300],
@@ -236,6 +373,7 @@ $TLData = [
     'ZSCG' => ["TL" => 2400],
     'ZSWH' => ["TL" => 2100],
     'ZSWX' => ["TL" => 'BY ATC'],
+    'ZSYT' => ["TL" => 3300],
     'ZSYN' => ["TL" => 1800],
     'ZULS' => ["TL" => 8100],
     'ZUXC' => ["TL" => 5400],
@@ -243,25 +381,19 @@ $TLData = [
 ];
 
 if (isset($TLData[$decoded->getIcao()]) && isset($TLData[$decoded->getIcao()]["pressure"])) {
-    print ($decoded->getPressure()->getValue() >= $TLData[$decoded->getIcao()]["pressure"]) ? $TLData[$decoded->getIcao()]["TL"] : '3600';
+    print($decoded->getPressure()->getValue() >= $TLData[$decoded->getIcao()]["pressure"]) ? $TLData[$decoded->getIcao()]["TL"] : '3600';
 } else {
     print $TLData[$decoded->getIcao()]["TL"] ?? '3600';
 }
 
-print(' M ');
-
-//Runway Condition Code
-if (isset($phenomenon[0]) && !empty($phenomenon[0])) {
-    if ((in_array("DZ", $phenomenon[0]->getTypes()))
-        || (in_array("RA", $phenomenon[0]->getTypes()))
-        || (in_array("SN", $phenomenon[0]->getTypes()))
-        || (in_array("SG", $phenomenon[0]->getTypes()))
-    ) {
-        print('ALL RWYS RWY CONDITION CODE 5 5 5 ISSUED AT ' . substr($rawMetar, 7, 4) . 'Z ALL PARTS WET DEPTH NOT REPORTED COVERAGE 100PCT ');
-    }
-}
+print(isset($TLData[$decoded->getIcao()]["TL"]) && $TLData[$decoded->getIcao()]["TL"] === 'BY ATC') ? ' ' : ' M ';
 
 // Closing Statement
-print('REPORT RECEIPT OF ATIS ' . $_GET['info'] . ' ON ' . $decoded->getIcao());
+print('RPT RECEIPT OF ATIS ' . $_GET['info'] . ' ON ' . $decoded->getIcao());
+if ($type === 'D') {
+    print('DEP');
+} elseif ($type === 'A') {
+    print('ARR');
+}
 
 ?>
