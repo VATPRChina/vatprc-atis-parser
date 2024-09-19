@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY composer.json composer.json
 COPY composer.lock composer.lock 
+COPY deps deps
 
 RUN composer install \
     --no-interaction \
