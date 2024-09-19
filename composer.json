@@ -14,7 +14,10 @@
     "repositories": [
         {
             "type": "path",
-            "url": "./deps/php-metar-decoder"
+            "url": "./deps/php-metar-decoder",
+            "options": {
+                "symlink": false
+            }
         }
     ]
 }
