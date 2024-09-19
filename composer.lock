@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1f5ddd77cda790bd4d339544df6d7e12",
+    "content-hash": "8ba52124a3814e6eddf60163ffdc3277",
     "packages": [
         {
             "name": "sagem-cassiopee/php-metar-decoder",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "./deps/php-metar-decoder",
-                "reference": "48b2bff9e5a15e99ea34273e567ae25dfbe4a43b"
+                "reference": "08209bca441457a6941e005eae357c269bf88a33"
             },
             "require": {
                 "php": ">=5.3.0"
@@ -43,6 +43,7 @@
             ],
             "description": "METAR weather observation decoder",
             "transport-options": {
+                "symlink": false,
                 "relative": true
             }
         }
@@ -50,16 +51,16 @@
     "packages-dev": [
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.8.1",
+            "version": "3.10.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
-                "reference": "14f5fff1e64118595db5408e946f3a22c75807f7"
+                "reference": "62d32998e820bddc40f99f8251958aed187a5c9c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/14f5fff1e64118595db5408e946f3a22c75807f7",
-                "reference": "14f5fff1e64118595db5408e946f3a22c75807f7",
+                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/62d32998e820bddc40f99f8251958aed187a5c9c",
+                "reference": "62d32998e820bddc40f99f8251958aed187a5c9c",
                 "shasum": ""
             },
             "require": {
@@ -126,7 +127,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-01-11T20:47:48+00:00"
+            "time": "2024-09-18T10:38:58+00:00"
         }
     ],
     "aliases": [],
