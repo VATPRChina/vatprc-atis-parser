@@ -231,7 +231,7 @@ $str_temp_data = strval($int_temp_data);
 if ($int_temp_data < 10 && $int_temp_data > 0) {
     $out_temp_data = '0' . $str_temp_data ;
 } elseif ($int_temp_data < 0 && $int_temp_data > -10) {
-    $out_temp_data = '-0' . $str_temp_data[1];
+    $out_temp_data = 'M0' . $str_temp_data[1];
 } elseif ($int_temp_data == 0) {
     $out_temp_data = '00';
 } else {
@@ -244,7 +244,7 @@ $str_dewpt_data = strval($int_dewpt_data);
 if ($int_dewpt_data < 10 && $int_dewpt_data > 0) {
         $out_dewpt_data = '0' . $str_dewpt_data ;
 } elseif ($int_dewpt_data < 0 && $int_dewpt_data > -10) {
-        $out_dewpt_data = '-0' . $str_dewpt_data[1];
+        $out_dewpt_data = 'M0' . $str_dewpt_data[1];
 } elseif ($int_dewpt_data == 0) {
         $out_dewpt_data = '00';
 } else {
