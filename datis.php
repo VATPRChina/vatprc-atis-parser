@@ -314,7 +314,7 @@ if ($decoded->getIcao() == 'ZSSS' || $decoded->getIcao() == 'ZSPD') {
 if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZGGG', 'ZGHA', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUGY', 'ZUTF', 'ZUUU'])) {
     if (
         (!str_contains($_GET['dep'] ?? '', ',') && !str_contains($_GET['arr'] ?? '', ',')) &&
-        ($_GET['dep'] ?? '') === ($_GET['arr'] ?? '')
+        ($_GET['dep'] == $_GET['arr'])
     ) {
         echo 'SINGLE RUNWAY OPERATION ';
     }
