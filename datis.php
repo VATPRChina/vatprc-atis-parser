@@ -316,7 +316,7 @@ if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZGGG', 'ZGHA', 'ZGSZ
         (!str_contains($_GET['dep'] ?? '', ',') && !str_contains($_GET['arr'] ?? '', ',')) &&
         ($_GET['dep'] == $_GET['arr'])
     ) {
-        echo 'SINGLE RUNWAY OPERATION ';
+        print 'SINGLE RUNWAY OPERATION ';
     }
 }
 
