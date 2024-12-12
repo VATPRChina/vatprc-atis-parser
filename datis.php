@@ -3,8 +3,6 @@ require_once 'vendor/autoload.php';
 
 use MetarDecoder\MetarDecoder;
 
-require 'airports.php';
-
 $rawMetar = $_GET['metar'];
 // FIXME: Dirty fix to issue caused by `8000NW` in the METAR
 // METAR ZMUB 100530Z VRB02MPS 8000NW BKN250 M07/M12 Q1005 NOSIG RMK QFE647.5 62 NW MO=
@@ -312,6 +310,15 @@ if ($decoded->getIcao() == 'ZSSS' || $decoded->getIcao() == 'ZSPD') {
     print('QNH OF SHANGHAI TERMINAL CONTROL AREA ' . $zspdqnh->getPressure()->getValue() . ' ');
 }
 
+//Pre-set information
+if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZGGG', 'ZGHA', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUGY', 'ZUTF', 'ZUUU'])) {
+    if (
+        (!str_contains($_GET['dep'] ?? '', ',') && !str_contains($_GET['arr'] ?? '', ',')) &&
+        ($_GET['dep'] == $_GET['arr'])
+    ) {
+        print 'SINGLE RUNWAY OPERATION ';
+    }
+}
 
 //Transition Altitude
 
