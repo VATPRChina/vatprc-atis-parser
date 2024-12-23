@@ -233,7 +233,7 @@ if ($int_temp_data < 10 && $int_temp_data > 0) {
 } elseif ($int_temp_data == 0) {
     $out_temp_data = '00';
 } else {
-    $out_temp_data = $str_temp_data ;
+    $out_temp_data = str_replace('-', 'M', $str_temp_data ;);
 }
 
 $dewpt_data = $decoded->getDewPointTemperature()->getValue();
@@ -246,7 +246,7 @@ if ($int_dewpt_data < 10 && $int_dewpt_data > 0) {
 } elseif ($int_dewpt_data == 0) {
         $out_dewpt_data = '00';
 } else {
-        $out_dewpt_data = $str_dewpt_data ;
+        $out_dewpt_data = str_replace('-', 'M', $str_dewpt_data);
 }
 
 print(' T ' . $out_temp_data . ' /DP ' . $out_dewpt_data . ' QNH ' . $decoded->getPressure()->getValue() . ' HPA ');
