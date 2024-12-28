@@ -39,11 +39,11 @@ print($_GET['info'] . ' '. substr($rawMetar, 7, 4) . 'Z ');
 
 // Operational Runway
 if ($type === 'D') {
-    print('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']));
+    print('DEP RWY ' . str_replace(',', ' & ', $_GET['dep']));
 } elseif ($type === 'A') {
-    print('EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
+    print('EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' & ', $_GET['arr']));
 } else {
-    print('DEP RWY ' . str_replace(',', ' AND ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' AND ', $_GET['arr']));
+    print('DEP RWY ' . str_replace(',', ' & ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' & ', $_GET['arr']));
 }
 
 // Initialize ctnoutput
@@ -53,16 +53,16 @@ $ctnoutput = '';
 $runwayConditionWarning = '';
 if (isset($phenomenon[0]) && !empty($phenomenon[0])) {
     $types = $phenomenon[0]->getTypes();
-    $isPrecipitation = in_array("DZ", $types) || in_array("TS", $types) || in_array("RA", $types) || in_array("SN", $types) || in_array("SG", $types);
+    $isPrecipitation = in_array("DZ", $types) || in_array("TS", $types) || in_array("RA", $types) || in_array("SN", $types);
     
     if ($isPrecipitation) {
         $runwayConditionWarning .= 'RWY ';
         if ($type === 'D') {
-            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['dep']);
+            $runwayConditionWarning .= str_replace(',', ' & ', $_GET['dep']);
         } elseif ($type === 'A') {
-            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['arr']);
+            $runwayConditionWarning .= str_replace(',', ' & ', $_GET['arr']);
         } else {
-            $runwayConditionWarning .= str_replace(',', ' AND ', $_GET['arr']);
+            $runwayConditionWarning .= str_replace(',', ' & ', $_GET['arr']);
         }
         $runwayConditionWarning .= ' SURFACE CONDITION CODE 5, 5, 5, ISSUED AT ' . substr($rawMetar, 7, 4) . ' ALL PARTS WET, DEPTH NOT REPORTED, COVERAGE 100PCT';
     }
@@ -76,7 +76,7 @@ if ($decoded->getWindshearAllRunways()) {
     $windShearWarning .= 'WS RWY ';
     foreach ($windShearAlerts as $index => $runway) {
         if ($index >= 1) {
-            $windShearWarning .= 'AND ';
+            $windShearWarning .= '& ';
         }
         $windShearWarning .= $runway;
     }
@@ -114,32 +114,31 @@ print strtoupper($ctnoutput);
 // Wind
 print(' WIND ');
 
-if ($surfaceWindObj->getMeanSpeed()->getValue() == 0) {
-    print('CALM ');
+if ($surfaceWindObj->withVariableDirection() == true) {
+    print('VRB DEG ');
 } else {
-    if ($surfaceWindObj->withVariableDirection() == true) {
-        print('VRB DEG ');
+    if ($surfaceWindObj->getMeanSpeed()->getValue() == 0) {
+        print('000 DEG ');
+    } elseif ($surfaceWindObj->getMeanDirection()->getValue() !== 0 && $surfaceWindObj->getMeanDirection()->getValue() < 100) {
+        print('0' . $surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
     } else {
-        if ($surfaceWindObj->getMeanDirection()->getValue() < 100) {
-            print('0');
-        }
-        print($surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
+        print ($surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
     }
-    
-    $raw_sw = $surfaceWindObj->getMeanSpeed()->getValue();
-    $int_sw = (int)$raw_sw;
-    $str_sw = strval($int_sw);
-    $out_sw = $str_sw ;
-
-    print($out_sw);
-
-    if ($surfaceWindObj->getSpeedVariations() != null) {
-        print('G' . $surfaceWindObj->getSpeedVariations()->getValue());
-    }
-
-    print(' MPS ');
-
 }
+
+$raw_sw = $surfaceWindObj->getMeanSpeed()->getValue();
+$int_sw = (int)$raw_sw;
+$str_sw = strval($int_sw);
+$out_sw = $str_sw ;
+
+print($out_sw);
+
+if ($surfaceWindObj->getSpeedVariations() != null) {
+    print('G' . $surfaceWindObj->getSpeedVariations()->getValue());
+}
+
+print(' MPS ');
+
 
 if ($surfaceWindObj->getDirectionVariations() != null) {
     if ($surfaceWindObj->getDirectionVariations()[0]->getValue() < 100) {
@@ -185,7 +184,7 @@ if ($rvr != null) {
 // Visibility
 if (strpos($rawMetar, 'CAVOK') !== false) {    
     print(' CAVOK ');
-} else {
+} elseif ($visObj !== NULL) {
     print(' VIS ' . $visObj->getVisibility()->getValue() . ' M ');
 }
 
@@ -209,17 +208,20 @@ foreach ($phenomenon as $pwn) {
         print(' ');
     }
 }
+
+$isFirst = true;
+
 foreach ($clouds as $cloud) {
-    print($cloud->getAmount());
-    $baseHeight = $cloud->getBaseHeight();
-    if ($baseHeight !== null) {
-        print(' ' . $cloud->getBaseHeight()->getValue() * 0.3);
+    if (!$isFirst) {
+        print(' /');
     } else {
-        print(' 0');
+        print('CLOUD ');
+        $isFirst = false;
     }
-    print('M');
-    print($cloud->getType());
-    print(' ');
+    $amount = $cloud->getAmount();
+    $baseHeight = $cloud->getBaseHeight();
+    $height = ($baseHeight !== null) ? intval($baseHeight->getValue() * 0.3) : 0;
+    print(sprintf('%s %dM', $amount, $height));
 }
 
 // Miscellaneous
@@ -233,7 +235,7 @@ if ($int_temp_data < 10 && $int_temp_data > 0) {
 } elseif ($int_temp_data == 0) {
     $out_temp_data = '00';
 } else {
-    $out_temp_data = str_replace('-', 'M', $str_temp_data ;);
+    $out_temp_data = str_replace('-', 'M', $str_temp_data);
 }
 
 $dewpt_data = $decoded->getDewPointTemperature()->getValue();
@@ -306,7 +308,7 @@ if (is_numeric($adelv)) {
     print('QFE ' . $qfe . ' HPA ');
 }
 
-if ($decoded->getIcao() == 'ZSSS' || $decoded->getIcao() == 'ZSPD') {
+if ($decoded->getIcao() == 'ZSSS') {
     print('QNH OF SHANGHAI TERMINAL CONTROL AREA ' . $zspdqnh->getPressure()->getValue() . ' ');
 }
 
@@ -396,11 +398,6 @@ if (isset($TLData[$decoded->getIcao()]) && isset($TLData[$decoded->getIcao()]["p
 print(isset($TLData[$decoded->getIcao()]["TL"]) && $TLData[$decoded->getIcao()]["TL"] === 'BY ATC') ? ' ' : ' M ';
 
 // Closing Statement
-print('RPT RECEIPT OF ATIS ' . $_GET['info'] . ' ON ' . $decoded->getIcao());
-if ($type === 'D') {
-    print('DEP');
-} elseif ($type === 'A') {
-    print('ARR');
-}
+print('ADZ YOU HAVE INFO ' . $_GET['info']);
 
 ?>
