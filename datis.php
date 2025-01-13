@@ -41,9 +41,9 @@ print($_GET['info'] . ' '. substr($rawMetar, 7, 4) . 'Z ');
 if ($type === 'D') {
     print('DEP RWY ' . str_replace(',', ' & ', $_GET['dep']));
 } elseif ($type === 'A') {
-    print('EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' & ', $_GET['arr']));
+    print('EXP ' . $_GET['apptype'] . ' APCH LDG RWY ' . str_replace(',', ' & ', $_GET['arr']));
 } else {
-    print('DEP RWY ' . str_replace(',', ' & ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' ARR RWY ' . str_replace(',', ' & ', $_GET['arr']));
+    print('DEP RWY ' . str_replace(',', ' & ', $_GET['dep']) . ' EXP ' . $_GET['apptype'] . ' APCH LDG RWY ' . str_replace(',', ' & ', $_GET['arr']));
 }
 
 // Initialize ctnoutput
