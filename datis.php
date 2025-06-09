@@ -83,12 +83,17 @@ if ($decoded->getWindshearAllRunways()) {
 }
 
 // A-CDM message
-if (in_array($decoded->getIcao(), ['ZBAA', 'ZSPD', 'ZGGG'])) {
-    $acdmMessage = ' A-CDM IN OPERATION ';
-} elseif ($acdm === '1') {
-    $acdmMessage = ' A-CDM IN OPERATION ';
+if ($acdm === '1') {
+    $acdmMessage = ' A-CDM IN OPERATION NO PUSH CLRN UNLESS TOBT PROPERLY SUBMITTED';
 } else {
     $acdmMessage = '';
+}
+
+// Visual Operation
+if (stripos($apptype, 'VIS') !== false || stripos($apptype, 'VISUAL') !== false)){
+    $visualMessage = ' VISUAL APPROACH IS IN PROGRESS'
+} else {
+    $visualMessage = '';
 }
 
 // NOTAM message
@@ -98,7 +103,7 @@ if ($notam !== null) {
 }
 
 // Check if any warning or message exists, add "CTN" if true
-if (!empty($runwayConditionWarning) || !empty($windShearWarning) || !empty($acdmMessage) || !empty($notamMessage)) {
+if (!empty($runwayConditionWarning) || !empty($windShearWarning) || !empty($acdmMessage) || !empty($visualMessage) || !empty($notamMessage)) {
     $ctnoutput .= ' CTN ';
 }
 
@@ -106,6 +111,7 @@ if (!empty($runwayConditionWarning) || !empty($windShearWarning) || !empty($acdm
 $ctnoutput .= $runwayConditionWarning;
 $ctnoutput .= $windShearWarning;
 $ctnoutput .= $acdmMessage;
+$ctnoutput .= $visualMessage;
 $ctnoutput .= $notamMessage;
 
 // ctnoutput combined warnings and messages
