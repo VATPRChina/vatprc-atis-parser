@@ -24,12 +24,9 @@ jobs:
         id: meta
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/vatprc-atis-parser
+            ghcr.io/${{ github.repository }}
           tags: |
-            latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-            type=ref,event=branch
-            type=semver,pattern={{raw}}
-            type=sha,enable=true,priority=100,prefix=commit-,suffix=,format=short
+            type=raw,value=1.0.${{ github.run_number }}
 
       - name: Publish images
         uses: docker/build-push-action@v5
