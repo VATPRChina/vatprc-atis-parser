@@ -90,7 +90,7 @@ if ($acdm === '1') {
 }
 
 // Visual Operation
-if (stripos($apptype, 'VIS') !== false || stripos($apptype, 'VISUAL') !== false) {
+if (isset($apptype) && preg_match('/\b(VIS|VISUAL)\b/i', $apptype)) {
     $visualMessage = ' VISUAL APPROACH IS IN PROGRESS';
 } else {
     $visualMessage = '';
