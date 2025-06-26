@@ -16,7 +16,7 @@ $rvr = $decoded->getRunwaysVisualRange(); //RunwayVisualRange array
 $phenomenon = $decoded->getPresentWeather(); //WeatherPhenomenon array
 $clouds = $decoded->getClouds(); //CloudLayer array
 $windShearAlerts = $decoded->getWindshearRunways();
-$zspdqnh = ($data = @file_get_contents('http://metar.vatprc.net/ZSPD')) ? $decoder->parse($data) : $decoder->parse(file_get_contents('http://metar.vatsim.net/ZSPD'));
+$zspdqnh = $decoder->parse(strpos($data = @file_get_contents('http://metar.vatprc.net/ZSPD'), '404') !== false ? file_get_contents('http://metar.vatsim.net/ZSPD') : $data);
 $type = $_GET['atistype'] ?? null;
 $adelv = $_GET['adelv'] ?? null; // Value for QFE calculation, type aerodrome elevation in meters.
 $notam = $_GET['NOTAM'] ?? null;
