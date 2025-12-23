@@ -319,7 +319,7 @@ if ($decoded->getIcao() == 'ZSSS') {
 }
 
 //Pre-set information
-if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZGGG', 'ZGHA', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUGY', 'ZUTF', 'ZUUU'])) {
+if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZBYN', 'ZGGG', 'ZGHA', 'ZGNN', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLLL', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUGY', 'ZUTF', 'ZUUU', 'ZWWW'])) {
     if (
         (!str_contains($_GET['dep'] ?? '', ',') && !str_contains($_GET['arr'] ?? '', ',')) &&
         ($_GET['dep'] == $_GET['arr'])
@@ -337,7 +337,7 @@ $TAData = [
     'ZGSZ' => ["TA" => 2700],
     'ZHSN' => ["TAA" => 4800, "TAB" => 4200, "TA" => 4500],
     'ZHXY' => ["TH" => 1800],
-    'ZLLL' => ["TAA" => 4500, "TAB" => 3900, "TA" => 4200],
+    'ZLLL' => ["TAA" => 5100, "TAB" => 4500, "TA" => 4800],
     'ZLXN' => ["TAA" => 5100, "TAB" => 4500, "TA" => 4800],
     'ZPJH' => ["TAA" => 3900, "TAB" => 3300, "TA" => 3600],
     'ZPLJ' => ["TAA" => 6300, "TAB" => 5700, "TA" => 6000],
@@ -377,7 +377,7 @@ $TLData = [
     'ZGSZ' => ["pressure" => 980, "TL" => 3300],
     'ZHSN' => ["TL" => 5100],
     'ZHXY' => ["TL" => 2400],
-    'ZLLL' => ["TL" => 4800],
+    'ZLLL' => ["TL" => 5400],
     'ZLXN' => ["TL" => 5400],
     'ZMCK' => ["TL" => 4500],
     'ZMUB' => ["TL" => 4500],
