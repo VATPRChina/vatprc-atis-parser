@@ -84,7 +84,7 @@ if ($decoded->getWindshearAllRunways()) {
 
 // A-CDM message
 if ($type !== 'A' && $acdm === '1') {
-    $acdmMessage = ' A-CDM IN OPERATION NO PUSH CLRN UNLESS TOBT PROPERLY SUBMITTED';
+    $acdmMessage = ' A-CDM IN OPERATION';
 } else {
     $acdmMessage = '';
 }
