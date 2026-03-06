@@ -21,6 +21,9 @@ $type = $_GET['atistype'] ?? null;
 $adelv = $_GET['adelv'] ?? null; // Value for QFE calculation, type aerodrome elevation in meters.
 $notam = $_GET['NOTAM'] ?? null;
 $acdm = $_GET['acdm'] ?? null;
+$overrideTA = $_GET['TA'] ?? null;
+$overrideTL = $_GET['TL'] ?? null;
+$overrideTH = $_GET['TH'] ?? null;
 
 if ($decoded->isValid() == false) {
     exit('Invalid METAR.');
@@ -35,7 +38,7 @@ if ($type === 'D') {
 } else {
     print('ATIS ');
 }
-print($_GET['info'] . ' '. substr($rawMetar, 7, 4) . 'Z ');
+print($_GET['info'] . ' ' . substr($rawMetar, 7, 4) . 'Z ');
 
 // Operational Runway
 if ($type === 'D') {
@@ -54,7 +57,7 @@ $runwayConditionWarning = '';
 if (isset($phenomenon[0]) && !empty($phenomenon[0])) {
     $types = $phenomenon[0]->getTypes();
     $isPrecipitation = in_array("DZ", $types) || in_array("TS", $types) || in_array("RA", $types) || in_array("SN", $types);
-    
+
     if ($isPrecipitation) {
         $runwayConditionWarning .= 'RWY ';
         if ($type === 'D') {
@@ -128,14 +131,14 @@ if ($surfaceWindObj->withVariableDirection() == true) {
     } elseif ($surfaceWindObj->getMeanDirection()->getValue() !== 0 && $surfaceWindObj->getMeanDirection()->getValue() < 100) {
         print('0' . $surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
     } else {
-        print ($surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
+        print($surfaceWindObj->getMeanDirection()->getValue() . ' DEG ');
     }
 }
 
 $raw_sw = $surfaceWindObj->getMeanSpeed()->getValue();
 $int_sw = (int)$raw_sw;
 $str_sw = strval($int_sw);
-$out_sw = $str_sw ;
+$out_sw = $str_sw;
 
 print($out_sw);
 
@@ -144,7 +147,6 @@ if ($surfaceWindObj->getSpeedVariations() != null) {
 }
 
 print(' MPS ');
-
 
 if ($surfaceWindObj->getDirectionVariations() != null) {
     if ($surfaceWindObj->getDirectionVariations()[0]->getValue() < 100) {
@@ -174,28 +176,28 @@ if ($rvr != null) {
             print(' M');
         }
         switch ($runwayRvr->getPastTendency()) {
-        case 'D':
+            case 'D':
                 print(' DOWNWARD TNDCY ');
-            break;
-        case 'N':
+                break;
+            case 'N':
                 print(' NC ');
-            break;
-        case 'U':
+                break;
+            case 'U':
                 print(' UPWARD TNDCY ');
-            break;
+                break;
         }
     }
 }
 
 // Visibility
-if (strpos($rawMetar, 'CAVOK') !== false) {    
+if (strpos($rawMetar, 'CAVOK') !== false) {
     print(' CAVOK ');
 } elseif ($visObj !== NULL) {
     print(' VIS ' . $visObj->getVisibility()->getValue() . ' M ');
 }
 
 // Cloud & Weather Phenomenon
-if (strpos($rawMetar, 'NSC') === true) {
+if (strpos($rawMetar, 'NSC') !== false) {
     print(' NSC');
 }
 foreach ($phenomenon as $pwn) {
@@ -235,7 +237,7 @@ $temp_data = $decoded->getAirTemperature()->getValue();
 $int_temp_data = (int)$temp_data;
 $str_temp_data = strval($int_temp_data);
 if ($int_temp_data < 10 && $int_temp_data > 0) {
-    $out_temp_data = '0' . $str_temp_data ;
+    $out_temp_data = '0' . $str_temp_data;
 } elseif ($int_temp_data < 0 && $int_temp_data > -10) {
     $out_temp_data = 'M0' . $str_temp_data[1];
 } elseif ($int_temp_data == 0) {
@@ -248,13 +250,13 @@ $dewpt_data = $decoded->getDewPointTemperature()->getValue();
 $int_dewpt_data = (int)$dewpt_data;
 $str_dewpt_data = strval($int_dewpt_data);
 if ($int_dewpt_data < 10 && $int_dewpt_data > 0) {
-        $out_dewpt_data = '0' . $str_dewpt_data ;
+    $out_dewpt_data = '0' . $str_dewpt_data;
 } elseif ($int_dewpt_data < 0 && $int_dewpt_data > -10) {
-        $out_dewpt_data = 'M0' . $str_dewpt_data[1];
+    $out_dewpt_data = 'M0' . $str_dewpt_data[1];
 } elseif ($int_dewpt_data == 0) {
-        $out_dewpt_data = '00';
+    $out_dewpt_data = '00';
 } else {
-        $out_dewpt_data = str_replace('-', 'M', $str_dewpt_data);
+    $out_dewpt_data = str_replace('-', 'M', $str_dewpt_data);
 }
 
 print(' T ' . $out_temp_data . ' /DP ' . $out_dewpt_data . ' QNH ' . $decoded->getPressure()->getValue() . ' HPA ');
@@ -273,7 +275,7 @@ if (is_numeric($adelv)) {
     {
         return $qnh - 1013.25 * pow((1 - 0.0065 * ((44330.77 - 11880.32 * pow($qfe, 0.190263) - $adelv) / 288.15)), 5.25588);
     }
-    
+
     /**
      * Iteratively calculates QFE based on QNH and altitude.
      *
@@ -288,28 +290,28 @@ if (is_numeric($adelv)) {
         $maxIterations = 100;
         $qfe = $qnh - 100;
         $iteration = 0;
-    
+
         while ($iteration < $maxIterations) {
             $f = qfeFunction($qfe, $qnh, $adelv);
             $f_prime = (qfeFunction($qfe + $tolerance, $qnh, $adelv) - $f) / $tolerance;
-    
+
             if (abs($f_prime) < $tolerance) {
                 break;
             }
-    
+
             $qfe = $qfe - $f / $f_prime;
             $iteration++;
-    
+
             if (abs($f) < $tolerance) {
                 break;
             }
         }
-    
+
         return round($qfe);
     }
-    
+
     $qnh = $decoded->getPressure()->getValue();
-    
+
     $qfe = calculateQFE($qnh, $adelv);
     print('QFE ' . $qfe . ' HPA ');
 }
@@ -328,8 +330,7 @@ if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZBYN', 'ZGGG', 'ZGHA
     }
 }
 
-//Transition Altitude
-
+//Transition Altitude / Height
 $TAData = [
     'ZGGG' => ["TA" => 2700],
     'ZGOW' => ["TA" => 2700],
@@ -356,17 +357,38 @@ $TAData = [
     'ZMCK' => ["TAA" => 4200, "TAB" => 3900, "TA" => 3900],
 ];
 
-print isset($TAData[$decoded->getIcao()]['TA']) ? 'TRANSITION ALTITUDE ' : (isset($TAData[$decoded->getIcao()]['TH']) ? 'TRANSITION HEIGHT ' : 'TRANSITION ALTITUDE ');
+$icao = $decoded->getIcao();
+$qnhValue = $decoded->getPressure()->getValue();
 
-if (isset($TAData[$decoded->getIcao()]['TAA']) && isset($TAData[$decoded->getIcao()]['TAB']) && isset($TAData[$decoded->getIcao()]['TA'])) {
-    $displayTime = ($decoded->getPressure()->getValue() >= 1031) ? $TAData[$decoded->getIcao()]['TAA'] : (($decoded->getPressure()->getValue() <= 979) ? $TAData[$decoded->getIcao()]['TAB'] : $TAData[$decoded->getIcao()]['TA']);
+// Default label
+$transitionLabel = isset($TAData[$icao]['TA'])
+    ? 'TRANSITION ALTITUDE '
+    : (isset($TAData[$icao]['TH']) ? 'TRANSITION HEIGHT ' : 'TRANSITION ALTITUDE ');
+
+// Default value
+if (isset($TAData[$icao]['TAA']) && isset($TAData[$icao]['TAB']) && isset($TAData[$icao]['TA'])) {
+    $displayTime = ($qnhValue >= 1031)
+        ? $TAData[$icao]['TAA']
+        : (($qnhValue <= 979) ? $TAData[$icao]['TAB'] : $TAData[$icao]['TA']);
 } else {
-    $displayTime = $TAData[$decoded->getIcao()]['TA'] ?? $TAData[$decoded->getIcao()]['TH'] ?? null;
+    $displayTime = $TAData[$icao]['TA'] ?? $TAData[$icao]['TH'] ?? null;
 }
 
-print $displayTime ?? (($decoded->getPressure()->getValue() >= 1031) ? 3300 : (($decoded->getPressure()->getValue() <= 979) ? 2700 : 3000));
+$displayTime = $displayTime ?? (($qnhValue >= 1031) ? 3300 : (($qnhValue <= 979) ? 2700 : 3000));
 
-print(isset($TAData[$decoded->getIcao()]["TA"]) && $TAData[$decoded->getIcao()]["TA"] === 'BY ATC') || (isset($TAData[$decoded->getIcao()]["TH"]) && $TAData[$decoded->getIcao()]["TH"] === 'BY ATC') ? ' ' : ' ';
+// Override only the provided item
+if ($overrideTA !== null && $overrideTA !== '') {
+    $transitionLabel = 'TRANSITION ALTITUDE ';
+    $displayTime = $overrideTA;
+}
+if ($overrideTH !== null && $overrideTH !== '') {
+    $transitionLabel = 'TRANSITION HEIGHT ';
+    $displayTime = $overrideTH;
+}
+
+print($transitionLabel);
+print($displayTime);
+print(' ');
 
 //Transition Level
 print('/LEVEL ');
@@ -397,13 +419,19 @@ $TLData = [
     'ZWSH' => ["TL" => 4800],
 ];
 
-if (isset($TLData[$decoded->getIcao()]) && isset($TLData[$decoded->getIcao()]["pressure"])) {
-    print($decoded->getPressure()->getValue() >= $TLData[$decoded->getIcao()]["pressure"]) ? $TLData[$decoded->getIcao()]["TL"] : '3600';
+if (isset($TLData[$icao]) && isset($TLData[$icao]["pressure"])) {
+    $displayTL = ($qnhValue >= $TLData[$icao]["pressure"]) ? $TLData[$icao]["TL"] : '3600';
 } else {
-    print $TLData[$decoded->getIcao()]["TL"] ?? '3600';
+    $displayTL = $TLData[$icao]["TL"] ?? '3600';
 }
 
-print(isset($TLData[$decoded->getIcao()]["TL"]) && $TLData[$decoded->getIcao()]["TL"] === 'BY ATC') ? ' ' : ' M ';
+// Override TL only if provided
+if ($overrideTL !== null && $overrideTL !== '') {
+    $displayTL = $overrideTL;
+}
+
+print($displayTL);
+print(($displayTL === 'BY ATC') ? ' ' : ' M ');
 
 // Closing Statement
 print('ADZ YOU HAVE INFO ' . $_GET['info']);
