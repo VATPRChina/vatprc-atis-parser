@@ -321,7 +321,7 @@ if ($decoded->getIcao() == 'ZSSS') {
 }
 
 //Pre-set information
-if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZBYN', 'ZGGG', 'ZGHA', 'ZGNN', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLLL', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUGY', 'ZUTF', 'ZUUU', 'ZWWW'])) {
+if (in_array($decoded->getIcao(), ['ZBAA', 'ZBAD', 'ZBTJ', 'ZBYN', 'ZGGG', 'ZGHA', 'ZGNN', 'ZGSZ', 'ZHCC', 'ZHEC', 'ZHHH', 'ZJHK', 'ZLLL', 'ZLXY', 'ZPPP', 'ZSHC', 'ZSNJ', 'ZSPD', 'ZSQD', 'ZSSS', 'ZUCK', 'ZUDJ', 'ZUGY', 'ZUTF', 'ZUUU', 'ZWWW'])) {
     if (
         (!str_contains($_GET['dep'] ?? '', ',') && !str_contains($_GET['arr'] ?? '', ',')) &&
         ($_GET['dep'] == $_GET['arr'])
