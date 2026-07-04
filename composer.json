@@ -9,6 +9,9 @@
     "scripts": {
         "code-sniff": [
             "./vendor/bin/phpcs --ignore=vendor --standard=./lint/ruleset.xml ./"
+        ],
+        "test": [
+            "php tests/runway_visual_range.php"
         ]
     },
     "repositories": [
